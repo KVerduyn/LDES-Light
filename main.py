@@ -91,12 +91,13 @@ async def write_ldes_page(force=False):
     g.add((page_uri, LDES.EventStream, Literal("LDES Stream Page")))
 
     if pages:
-    prev_page = pages[-1]
-    if prev_page:  # Controleer of prev_page niet None is
-        g.add((URIRef(prev_page), TREE.relation, g.resource(None).add(TREE.node, page_uri).add(TREE.type, TREE.NextPageRelation)))
+        prev_page = pages[-1]
+        if prev_page:  # Controleer of prev_page niet None is
+            g.add((URIRef(prev_page), TREE.relation, 
+                   g.resource(None).add(TREE.node, page_uri)
+                                  .add(TREE.type, TREE.NextPageRelation)))
 
-
-
+    
     pages.append(str(page_uri))
     g.serialize(destination=page_file, format="turtle")
 
