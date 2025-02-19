@@ -44,6 +44,8 @@ async def ingest_rdf(request: Request):
 def extract_objects(graph):
     objects = []
     for subj in set(graph.subjects()):
+        print(f"Processing subject: {subj}")  # ✅ Debug output
+        
         if isinstance(subj, URIRef):
             subgraph = Graph()
             for triple in graph.triples((subj, None, None)):
