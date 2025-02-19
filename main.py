@@ -24,14 +24,21 @@ async def ingest_rdf(request: Request):
 
     g = Graph()
     try:
-        rdf_format = content_type.split('/')[-1]  # Haal formaat uit Content-Type header
+        rdf_format = content_type.split('/')[-1]
         if rdf_format == "ld+json":
-            rdf_format = "json-ld"  # rdflib verwacht "json-ld" i.p.v. "ld+json"
+            rdf_format = "json-ld"
 
         g.parse(data=data, format=rdf_format)
+
+        print(f"Received {len(g)} triples")  # ✅ Laat zien hoeveel triples binnenkomen
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse RDF data: {str(e)}")
 
+    objects = extract_objects(g)
+    print(f"Extracted {len(objects)} objects")  # ✅ Laat zien hoeveel objects worden opgeslagen
+
+    rdf_store.extend(objects)
     return {"message": "RDF data ingested successfully."}
 
 def extract_objects(graph):
