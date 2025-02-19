@@ -24,15 +24,13 @@ async def ingest_rdf(request: Request):
 
     g = Graph()
     try:
-        g.parse(data=data, format=content_type.split('/')[-1])
+        rdf_format = content_type.split('/')[-1]  # Haal formaat uit Content-Type header
+        if rdf_format == "ld+json":
+            rdf_format = "json-ld"  # rdflib verwacht "json-ld" i.p.v. "ld+json"
+
+        g.parse(data=data, format=rdf_format)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse RDF data: {str(e)}")
-
-    objects = extract_objects(g)
-    rdf_store.extend(objects)
-
-    if len(rdf_store) >= PAGE_SIZE:
-        await write_ldes_page()
 
     return {"message": "RDF data ingested successfully."}
 
