@@ -67,16 +67,19 @@ async def finalize_ldes():
 async def write_ldes_page(force=False):
     global rdf_store, pages
     if not force and len(rdf_store) < PAGE_SIZE:
+        print(f"Buffer size {len(rdf_store)} is too small, waiting for more data...")  # Debug print
         return
 
-    page_file = os.path.join(DATA_DIR, f"{VIEW_NAME}.ttl")
-
+    print(f"Writing LDES page with {len(rdf_store[:PAGE_SIZE] if not force else rdf_store)} objects")  # Debug print
+    
+    page_file = os.path.join(DATA_DIR, "view_1.ttl")
     g = Graph()
+
     for obj in rdf_store[:PAGE_SIZE] if not force else rdf_store:
         for triple in obj:
             g.add(triple)
 
-    page_uri = BASE + VIEW_NAME
+    page_uri = BASE + "view_1"
     g.add((page_uri, DCTERMS.created, Literal(datetime.utcnow().isoformat())))
     g.add((page_uri, LDES.EventStream, Literal("LDES Stream Page")))
 
@@ -86,7 +89,10 @@ async def write_ldes_page(force=False):
 
     pages.append(str(page_uri))
     g.serialize(destination=page_file, format="turtle")
+
+    print(f"Page successfully written to {page_file}")  # Debug print
     rdf_store = [] if force else rdf_store[PAGE_SIZE:]
+
 
 @app.get("/ldes")
 async def get_ldes_start():
