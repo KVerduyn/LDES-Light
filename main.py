@@ -29,17 +29,24 @@ async def ingest_rdf(request: Request):
             rdf_format = "json-ld"
 
         g.parse(data=data, format=rdf_format)
-
-        print(f"Received {len(g)} triples")  # ✅ Laat zien hoeveel triples binnenkomen
+        print(f"Received {len(g)} triples")  # ✅ Debug print
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse RDF data: {str(e)}")
 
     objects = extract_objects(g)
-    print(f"Extracted {len(objects)} objects")  # ✅ Laat zien hoeveel objects worden opgeslagen
+    print(f"Extracted {len(objects)} objects")  # ✅ Debug print
 
     rdf_store.extend(objects)
+
+    print(f"Current buffer size: {len(rdf_store)}")  # ✅ Debug print
+
+    if len(rdf_store) >= PAGE_SIZE:
+        print("Calling write_ldes_page()...")  # ✅ Debug print
+        await write_ldes_page()
+
     return {"message": "RDF data ingested successfully."}
+
 
 def extract_objects(graph):
     objects = []
